@@ -1,6 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
-import own_img from "./assets/owl.png";
-import forest_background from "./assets/bg.jpg";
+// import own_img from "./assets/owl.png";
+import own_img from "./assets/myowl.png";
+import boold from './assets/myblood.png'
+
+import col_up from './assets/col_up.png'
+import col_down from './assets/col_down.png'
+
+// import forest_background from "./assets/bg.jpg";
+// import forest_background from "./assets/bg1.jpg";
+import forest_background from "./assets/bg2.jpg";
 
 interface Obstacle {
   x: number;
@@ -20,13 +28,14 @@ interface Rect {
 function App() {
   const [birdY, setBirdY] = useState<number>(250); // Initial vertical position
   const [obstacles, setObstacles] = useState<Obstacle[]>([]);
+  const [columns, setColumns] = useState<Obstacle[]>([]);
   const [backgroundX, setBackgroundX] = useState<number>(0);
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
 
-  const gravity = 9; // Adjusted gravity force
+  const gravity = 10; // Adjusted gravity force
   const jumpHeight = 1000; // Adjusted jump height
-  const obstacleWidth = 60; // Width of the obstacles
+  const obstacleWidth = 100; // Width of the obstacles
   const obstacleGap = 300; // Gap between top and bottom obstacles
 
   const gameLoopRef = useRef<number | null>(null);
@@ -37,6 +46,7 @@ function App() {
     if (!gameOver) {
       // Start the game loop
       gameLoopRef.current = requestAnimationFrame(gameLoop);
+    
     }
 
     return () => {
@@ -56,8 +66,10 @@ function App() {
       setBirdY((prevY) => prevY + gravity);
 
       // Move obstacles
-      setObstacles((prevObstacles) =>
-        prevObstacles.map((obs) => ({ ...obs, x: obs.x - 2 }))
+      setObstacles((prevObstacles) => {
+        checkCollision(prevObstacles);
+        return prevObstacles.map((obs) => ({ ...obs, x: obs.x - 2 }))
+      }
       );
 
       // Remove obstacles that are off-screen
@@ -85,8 +97,8 @@ function App() {
         return updatedObstacles;
       });
 
+
       // Collision detection
-      checkCollision();
 
       // Check if bird hits the ground or goes off the screen
       if (birdY >= window.innerHeight - 100 || birdY <= 0) {
@@ -114,19 +126,21 @@ function App() {
       bottomHeight,
     };
 
-    setObstacles((prevObstacles) => [...prevObstacles, newObstacle]);
-    console.log("Obstacle generated");
+
+    setObstacles((prevObstacles) => {
+      return [...prevObstacles, newObstacle];
+    });
   };
 
-  const checkCollision = () => {
+  const checkCollision = (prevObstacles: Obstacle[]) => {
     if (owlRef.current) {
       const owlRect = owlRef.current.getBoundingClientRect();
 
       if (owlRect.top <= 0 || owlRect.bottom >= window.innerHeight) {
         setGameOver(true);
       }
-
-      for (const obs of obstacles) {
+      console.log(prevObstacles);
+      for (const obs of prevObstacles) {
         const obsX = obs.x;
         const obsWidth = obstacleWidth;
 
@@ -146,12 +160,13 @@ function App() {
           bottom: window.innerHeight,
         };
 
-        console.log(owlRect, topObsRect, bottomObsRect);
+        // console.log(owlRect, topObsRect, bottomObsRect);
 
         if (
           rectsOverlap(owlRect, topObsRect) ||
           rectsOverlap(owlRect, bottomObsRect)
         ) {
+          setBirdY(owlRect.top);
           setGameOver(true);
           break;
         }
@@ -180,7 +195,7 @@ function App() {
 
   const restartGame = () => {
     setBirdY(window.innerHeight / 2);
-    setObstacles([]);
+    // setObstacles([]);
     obstacleTimerRef.current = 0;
     setBackgroundX(0);
     if (gameOver) {
@@ -189,6 +204,7 @@ function App() {
       setGameOver(true);
     }
     setScore(0);
+    window.location.reload();
   };
 
   useEffect(() => {
@@ -203,7 +219,7 @@ function App() {
     <div
       style={{
         backgroundImage: `url(${forest_background})`,
-        backgroundSize: "cover",
+        backgroundSize: "100%",
         backgroundPosition: `${backgroundX}px 0`,
       }}
       className="transition-all h-screen w-screen bg-neutral-800 text-white flex relative justify-center items-center overflow-hidden"
@@ -228,6 +244,21 @@ function App() {
         />
       </div>
 
+      {/* Owl */}
+      {gameOver && <div
+        ref={owlRef}
+        style={{
+          top: birdY + 70,
+        }}
+        className="w-[100px] h-[100px] absolute left-[100px] transition-all"
+      >
+        <img
+          src={boold}
+          alt="owl"
+          className="w-full h-full object-cover"
+        />
+      </div>}
+
       {/* Obstacles */}
       {obstacles.map((obs, index) => (
         <div key={index}>
@@ -237,8 +268,12 @@ function App() {
               left: `${obs.x}px`,
               width: `${obstacleWidth}px`,
               height: `${obs.topHeight}px`,
+              backgroundImage: 'url(' + col_up + ')',
+              backgroundSize: '100% 100%  ',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'bottom',
             }}
-            className="bg-green-700 absolute top-0"
+            className=" absolute top-0"
           ></div>
           {/* Bottom Obstacle */}
           <div
@@ -247,17 +282,23 @@ function App() {
               width: `${obstacleWidth}px`,
               height: `${obs.bottomHeight}px`,
               top: `${obs.topHeight + obstacleGap}px`,
+              backgroundImage: 'url(' + col_down + ')',
+              backgroundSize: '100% 100%  ',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'top',
             }}
-            className="bg-green-700 absolute"
+            className=" absolute"
           ></div>
         </div>
       ))}
 
       {/* Game Over Message */}
       {gameOver && (
-        <div className="absolute text-4xl font-bold text-red-600 text-center">
-          Game Over
-          <div className="text-xl mt-4">Press 'R' to Restart</div>
+        <div className="fixed w-screen h-screen bg-black/40 flex items-center justify-center">
+          <div className=" text-4xl font-bold text-white text-center bg-red-700 px-12 py-8 rounded-lg">
+            Game Over
+            <div className="text-xl mt-4">Press 'R' to Restart</div>
+          </div>
         </div>
       )}
     </div>
