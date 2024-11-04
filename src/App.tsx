@@ -7,6 +7,7 @@ interface Obstacle {
   width: number;
   topHeight: number;
   bottomHeight: number;
+  counted?: boolean;
 }
 
 interface Rect {
@@ -19,19 +20,18 @@ interface Rect {
 function App() {
   const [birdY, setBirdY] = useState<number>(250); // Initial vertical position
   const [obstacles, setObstacles] = useState<Obstacle[]>([]);
-  const [obstacleTimer, setObstacleTimer] = useState<number>(0);
   const [backgroundX, setBackgroundX] = useState<number>(0);
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
 
-  const gravity = 9; // Gravity force
-  const jumpHeight = 1000; // How high the bird jumps
+  const gravity = 9; // Adjusted gravity force
+  const jumpHeight = 1000; // Adjusted jump height
   const obstacleWidth = 60; // Width of the obstacles
-  const obstacleGap = 200; // Gap between top and bottom obstacles
+  const obstacleGap = 300; // Gap between top and bottom obstacles
 
   const gameLoopRef = useRef<number | null>(null);
+  const obstacleTimerRef = useRef<number>(0);
   const owlRef = useRef<HTMLDivElement>(null);
-  const gameContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!gameOver) {
@@ -65,17 +65,17 @@ function App() {
         prevObstacles.filter((obs) => obs.x + obs.width > 0)
       );
 
-      // Handle obstacle generation timing
-      setObstacleTimer((prevTimer) => prevTimer + 1);
+      // Handle obstacle generation timing using a ref
+      obstacleTimerRef.current += 1;
 
-      if (obstacleTimer >= 100) {
+      if (obstacleTimerRef.current >= 300) {
         generateObstacle();
-        setObstacleTimer(0);
+        obstacleTimerRef.current = 0;
       }
 
       // Increase score when the bird passes an obstacle
       setObstacles((prevObstacles) => {
-        let updatedObstacles = prevObstacles.map((obs) => {
+        const updatedObstacles = prevObstacles.map((obs) => {
           if (!obs.counted && obs.x + obs.width < 100) {
             setScore((prevScore) => prevScore + 1);
             return { ...obs, counted: true };
@@ -162,10 +162,10 @@ function App() {
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === " " || event.key === "ArrowUp") {
+    if ((event.key === " " || event.key === "ArrowUp") && !gameOver) {
       // Make the bird jump
       setBirdY((prevY) => prevY - jumpHeight);
-    } else if (event.key === "r" && gameOver) {
+    } else if ((event.key === "r" || event.key === "R")) {
       // Restart the game
       restartGame();
     }
@@ -174,9 +174,13 @@ function App() {
   const restartGame = () => {
     setBirdY(250);
     setObstacles([]);
-    setObstacleTimer(0);
+    obstacleTimerRef.current = 0;
     setBackgroundX(0);
-    setGameOver(false);
+    if (gameOver){
+      setGameOver(false);
+    } else {
+      setGameOver(true);
+    }
     setScore(0);
   };
 
@@ -190,7 +194,6 @@ function App() {
 
   return (
     <div
-      ref={gameContainerRef}
       style={{
         backgroundImage: `url(${forest_background})`,
         backgroundSize: "cover",
@@ -245,7 +248,7 @@ function App() {
 
       {/* Game Over Message */}
       {gameOver && (
-        <div className="absolute text-4xl font-bold text-red-600">
+        <div className="absolute text-4xl font-bold text-red-600 text-center">
           Game Over
           <div className="text-xl mt-4">Press 'R' to Restart</div>
         </div>
