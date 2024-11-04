@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 // import own_img from "./assets/owl.png";
 import own_img from "./assets/myowl.png";
 // import own_img from "./assets/myowl2.png";
@@ -29,7 +29,6 @@ interface Rect {
 function App() {
   const [birdY, setBirdY] = useState<number>(250); // Initial vertical position
   const [obstacles, setObstacles] = useState<Obstacle[]>([]);
-  const [columns, setColumns] = useState<Obstacle[]>([]);
   const [backgroundX, setBackgroundX] = useState<number>(0);
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
