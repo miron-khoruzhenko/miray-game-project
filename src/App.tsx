@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 // import own_img from "./assets/owl.png";
 import own_img from "./assets/myowl.png";
+// import own_img from "./assets/myowl2.png";
 import boold from './assets/myblood.png'
 
 import col_up from './assets/col_up.png'
@@ -235,12 +236,12 @@ function App() {
         style={{
           top: birdY,
         }}
-        className="w-[100px] h-[100px] absolute left-[100px] transition-all"
+        className="w-[120px] h-[90px] absolute left-[100px] transition-all"
       >
         <img
           src={own_img}
           alt="owl"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-fill"
         />
       </div>
 
@@ -248,9 +249,9 @@ function App() {
       {gameOver && <div
         ref={owlRef}
         style={{
-          top: birdY + 70,
+          top: birdY + 65,
         }}
-        className="w-[100px] h-[100px] absolute left-[100px] transition-all"
+        className="w-[120px] h-[90px] absolute left-[100px] transition-all"
       >
         <img
           src={boold}
