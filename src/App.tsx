@@ -115,11 +115,16 @@ function App() {
     };
 
     setObstacles((prevObstacles) => [...prevObstacles, newObstacle]);
+    console.log("Obstacle generated");
   };
 
   const checkCollision = () => {
     if (owlRef.current) {
       const owlRect = owlRef.current.getBoundingClientRect();
+
+      if (owlRect.top <= 0 || owlRect.bottom >= window.innerHeight) {
+        setGameOver(true);
+      }
 
       for (const obs of obstacles) {
         const obsX = obs.x;
@@ -140,6 +145,8 @@ function App() {
           top: obs.topHeight + obstacleGap,
           bottom: window.innerHeight,
         };
+
+        console.log(owlRect, topObsRect, bottomObsRect);
 
         if (
           rectsOverlap(owlRect, topObsRect) ||
@@ -172,11 +179,11 @@ function App() {
   };
 
   const restartGame = () => {
-    setBirdY(250);
+    setBirdY(window.innerHeight / 2);
     setObstacles([]);
     obstacleTimerRef.current = 0;
     setBackgroundX(0);
-    if (gameOver){
+    if (gameOver) {
       setGameOver(false);
     } else {
       setGameOver(true);
